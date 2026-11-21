@@ -19,6 +19,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout OctaveDividerProcessor::crea
                  NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.8f));
     p.push_back (std::make_unique<AudioParameterFloat> (ParameterID { "oct2", 1 }, "Octave 2 Level",
                  NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.6f));
+    // Modo de la Octava 2: Sub (-1 oct, redondo, para bajo) o el original (-2 oct)
+    p.push_back (std::make_unique<AudioParameterChoice> (ParameterID { "oct2mode", 1 }, "Octave 2 Mode",
+                 StringArray { "Sub -1 oct (bajo)", "-2 oct (original)" }, 0));
     return { p.begin(), p.end() };
 }
 
@@ -29,6 +32,7 @@ void OctaveDividerProcessor::prepareToPlay (double sr, int)
     kDirect.setCurrentAndTargetValue (*apvts.getRawParameterValue ("direct"));
     kOct1.setCurrentAndTargetValue   (*apvts.getRawParameterValue ("oct1"));
     kOct2.setCurrentAndTargetValue   (*apvts.getRawParameterValue ("oct2"));
+    core.setSubMode (apvts.getRawParameterValue ("oct2mode")->load() < 0.5f);
 }
 
 bool OctaveDividerProcessor::isBusesLayoutSupported (const BusesLayout& l) const
@@ -44,6 +48,8 @@ void OctaveDividerProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     kDirect.setTargetValue (*apvts.getRawParameterValue ("direct"));
     kOct1.setTargetValue   (*apvts.getRawParameterValue ("oct1"));
     kOct2.setTargetValue   (*apvts.getRawParameterValue ("oct2"));
+
+    core.setSubMode (apvts.getRawParameterValue ("oct2mode")->load() < 0.5f);
 
     const int numCh = buffer.getNumChannels(), n = buffer.getNumSamples();
 
