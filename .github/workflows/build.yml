@@ -1,0 +1,19 @@
+name: build-vst3
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar
+        run: cmake -S juce -B build -DCOPY_AFTER_BUILD=OFF
+      - name: Compilar
+        run: cmake --build build --config Release --parallel
+      - name: Subir VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: OctaveDivider-VST3-Windows
+          path: build/OctaveDivider_artefacts/Release/VST3/
+          
